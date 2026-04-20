@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CGM Inspector – CGM-Datei Analyse</title>
+  <meta name="description"
+    content="Analysiere CGM-Dateien (ISO 8632) auf Version, Profil, Kodierung und Metadaten. Unterstützt ATA GREXCHANGE, S1000D, WebCGM und mehr." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <script type="module" crossorigin src="/assets/index-q494NPBz.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-C8ThhHMs.css">
+</head>
+
+<body>
+  <div class="app-container">
+
+    <!-- HEADER -->
+    <header>
+      <div class="header-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg>
+      </div>
+      <div class="header-text">
+        <h1>CGM Inspector</h1>
+        <p>Analysiere Computer Graphics Metafiles auf Version, Profil und Metadaten</p>
+      </div>
+    </header>
+
+    <main>
+      <!-- DROP ZONE -->
+      <div id="drop-zone" class="drop-zone" role="button" tabindex="0" aria-label="CGM Dateien hochladen">
+        <div class="drop-zone-content">
+          <div class="drop-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+          </div>
+          <p class="drop-title">CGM-Dateien hierher ziehen</p>
+          <p class="drop-sub">oder Dateien aus dem Explorer wählen</p>
+          <button id="file-select-btn" class="btn primary" type="button">Dateien auswählen</button>
+          <input type="file" id="file-input" multiple accept=".cgm,.CGM" hidden aria-hidden="true" />
+        </div>
+      </div>
+
+      <!-- TOOLBAR -->
+      <div id="toolbar" class="toolbar hidden">
+        <div class="toolbar-left">
+          <div class="search-wrap">
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input type="text" id="filter-input" class="filter-input" placeholder="Datei, Profil oder Version filtern…"
+              aria-label="Ergebnisse filtern" />
+          </div>
+        </div>
+        <div class="toolbar-right">
+          <button id="clear-btn" class="btn ghost" type="button" title="Alle Ergebnisse löschen">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+              <path d="M10 11v6" />
+              <path d="M14 11v6" />
+              <path d="M9 6V4h6v2" />
+            </svg>
+            Leeren
+          </button>
+          <button id="download-excel-btn" class="btn success" type="button">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Excel exportieren
+          </button>
+        </div>
+      </div>
+
+      <!-- PROGRESS BAR -->
+      <div id="progress-wrap" class="progress-wrap hidden" aria-label="Fortschritt">
+        <div id="progress-bar" class="progress-bar" style="width:0%" role="progressbar">0%</div>
+      </div>
+
+      <!-- SUMMARY BAR -->
+      <div id="summary-bar" class="summary-bar hidden">
+        <div class="summary-item">
+          <span class="summary-num" id="count-total">0</span>
+          <span class="summary-label">Gesamt</span>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-item success">
+          <span class="summary-num" id="count-ok">0</span>
+          <span class="summary-label">Profil erkannt</span>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-item unknown">
+          <span class="summary-num" id="count-unknown">0</span>
+          <span class="summary-label">Kein Profil</span>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-item error">
+          <span class="summary-num" id="count-error">0</span>
+          <span class="summary-label">Fehler</span>
+        </div>
+      </div>
+
+      <!-- RESULTS TABLE -->
+      <div id="results-container" class="results-container hidden">
+        <div class="table-wrapper">
+          <table id="results-table" role="grid">
+            <thead>
+              <tr>
+                <th>Dateiname</th>
+                <th>Kodierung</th>
+                <th>CGM-Version</th>
+                <th>Profil-ID</th>
+                <th>Edition</th>
+                <th>Farbe</th>
+                <th>Quelle / Tool</th>
+                <th>Datum</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="results-body">
+              <!-- Dynamisch befüllt -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <p>ISO 8632 Binary (V3) &amp; ASCII (V4) · ATA GREXCHANGE · S1000D · WebCGM · PSC CGM</p>
+    </footer>
+  </div>
+
+</body>
+
+</html>
